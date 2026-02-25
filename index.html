@@ -230,7 +230,7 @@ streams.forEach((stream,index)=>{
       <div>${stream.name}</div>
       <div id="toggle${index}" class="toggle"></div>
     </div>
-    <div class="status">Live</div>
+    <div class="status buffering" id="status${index}">Buffering...</div>
     <div class="vu"><div class="vu-bar" id="vu${index}"></div></div>
     <div>Volume</div>
     <input type="range" min="0" max="1" step="0.01" value="0.7" id="vol${index}">
@@ -339,3 +339,4 @@ updateClock();
 
 </body>
 </html>
+
