@@ -141,7 +141,12 @@ header{
 .status{
   font-size:12px;
   margin:6px 0;
-  color:#00e676;
+}
+
+.status.live{ color:#00e676; }
+.status.buffering{ color:orange; }
+.status.offline{ color:#ff5252; }
+.status.paused{ color:#9fb3c8; }
 }
 
 .vu{
@@ -339,4 +344,5 @@ updateClock();
 
 </body>
 </html>
+
 
