@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>KNRM VHF Monitor</title>
+<title>KNRM VHF Dashboard</title>
 
 <style>
 :root{
@@ -18,7 +18,6 @@ body{
   background:#001c2e;
   color:white;
   height:100vh;
-  overflow:hidden;
 }
 
 /* ===== LAYOUT ===== */
@@ -71,7 +70,6 @@ body{
 .main{
   display:flex;
   flex-direction:column;
-  height:100%;
 }
 
 header{
@@ -97,7 +95,6 @@ header{
 .header-title{
   font-size:18px;
   font-weight:600;
-  padding-bottom:4px;
 }
 
 .header-right{
@@ -109,7 +106,6 @@ header{
 .clock{
   text-align:right;
   font-size:14px;
-  line-height:1.3;
   color:var(--text-soft);
 }
 
@@ -124,35 +120,23 @@ header{
   gap:10px;
 }
 
-.icon-btn{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  border:none;
-  background:var(--panel-soft);
-  color:white;
-  cursor:pointer;
-}
-
 .master-btn{
-  border:none;
   padding:6px 14px;
   border-radius:20px;
-  font-weight:600;
-  cursor:pointer;
+  border:none;
   background:var(--panel-soft);
   color:white;
+  cursor:pointer;
 }
 
 /* ===== GRID ===== */
 
 .grid{
-  flex:1;
+  padding:20px;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:18px;
-  padding:20px;
-  overflow:auto;
+  align-content:start; /* BELANGRIJK */
 }
 
 .tile{
@@ -169,44 +153,13 @@ header{
     rgba(20,28,36,0.95)
   );
   border:1px solid rgba(237,109,58,0.6);
-  box-shadow:0 0 20px rgba(237,109,58,0.35);
 }
 
 .tile-header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   font-size:14px;
   font-weight:600;
-}
-
-.toggle{
-  width:38px;
-  height:20px;
-  background:#444;
-  border-radius:20px;
-  position:relative;
-  cursor:pointer;
-}
-
-.toggle::after{
-  content:"";
-  width:16px;
-  height:16px;
-  background:white;
-  border-radius:50%;
-  position:absolute;
-  top:2px;
-  left:2px;
-  transition:.2s;
-}
-
-.toggle.on{
-  background:rgba(237,109,58,0.8);
-}
-
-.toggle.on::after{
-  left:20px;
 }
 
 .status{
@@ -223,7 +176,6 @@ header{
   background:#222;
   border-radius:4px;
   overflow:hidden;
-  margin:8px 0;
 }
 
 .vu-bar{
@@ -231,12 +183,6 @@ header{
   width:0%;
   background:linear-gradient(90deg,#00e676,var(--knrm-orange));
 }
-
-.controls{
-  font-size:12px;
-}
-
-input[type=range]{width:100%;}
 </style>
 </head>
 
@@ -266,11 +212,7 @@ input[type=range]{width:100%;}
           <div id="utcLine"></div>
         </div>
 
-        <div class="header-buttons">
-          <button id="masterBtn" class="master-btn" onclick="toggleAll()">▶ Play all</button>
-          <button class="icon-btn" onclick="toggleNightMode()">🌙</button>
-          <button class="icon-btn" onclick="toggleFullscreen()">⛶</button>
-        </div>
+        <button id="masterBtn" class="master-btn" onclick="toggleAll()">▶ Play all</button>
       </div>
     </header>
 
@@ -297,16 +239,9 @@ streams.forEach((stream,index)=>{
   const tile=document.createElement("div");
   tile.className="tile";
   tile.innerHTML=`
-    <div class="tile-header">
-      <div>${stream.name}</div>
-      <div id="toggle${index}" class="toggle"></div>
-    </div>
+    <div class="tile-header">${stream.name}</div>
     <div class="status buffering" id="status${index}">Buffering...</div>
     <div class="vu"><div class="vu-bar" id="vu${index}"></div></div>
-    <div class="controls">
-      Volume 
-      <input type="range" min="0" max="1" step="0.01" value="0.7" id="vol${index}">
-    </div>
     <audio id="audio${index}" src="${stream.url}" crossorigin="anonymous"></audio>
   `;
   grid.appendChild(tile);
@@ -316,20 +251,12 @@ streams.forEach((stream,index)=>{
 function setupAudio(index){
   const audio=document.getElementById("audio"+index);
   const tile=audio.parentElement;
-  const toggle=document.getElementById("toggle"+index);
   const vuBar=document.getElementById("vu"+index);
   const status=document.getElementById("status"+index);
-
-  toggle.onclick=()=>toggleStream(index);
 
   audio.addEventListener("playing",()=>{
     status.textContent="Live";
     status.className="status live";
-    toggle.classList.add("on");
-  });
-
-  audio.addEventListener("pause",()=>{
-    toggle.classList.remove("on");
   });
 
   const source=audioCtx.createMediaElementSource(audio);
@@ -350,8 +277,7 @@ function setupAudio(index){
 
     if(avg>8){
       tile.classList.add("active");
-      clearTimeout(tile.timeout);
-      tile.timeout=setTimeout(()=>tile.classList.remove("active"),1000);
+      setTimeout(()=>tile.classList.remove("active"),800);
     }
 
     requestAnimationFrame(monitor);
@@ -361,12 +287,6 @@ function setupAudio(index){
     audioCtx.resume();
     monitor();
   };
-}
-
-function toggleStream(i){
-  const audio=document.getElementById("audio"+i);
-  if(audio.paused){audio.play();}
-  else{audio.pause();}
 }
 
 function toggleAll(){
@@ -382,18 +302,6 @@ function toggleAll(){
     allPlaying ? "⏹ Stop all" : "▶ Play all";
 }
 
-function toggleNightMode(){
-  document.body.classList.toggle("night");
-}
-
-function toggleFullscreen(){
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-}
-
 /* CLOCK */
 function updateClock(){
   const now=new Date();
@@ -407,30 +315,35 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-/* P2000 RSS */
+/* P2000 RSS via allorigins */
 async function loadP2000(){
   const rssUrl="https://feeds.livep2000.nl/rss.xml";
-  const api="https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(rssUrl);
+  const proxy="https://api.allorigins.win/raw?url="+encodeURIComponent(rssUrl);
 
-  const response=await fetch(api);
-  const data=await response.json();
+  const response=await fetch(proxy);
+  const text=await response.text();
 
+  const parser=new DOMParser();
+  const xml=parser.parseFromString(text,"text/xml");
+
+  const items=xml.querySelectorAll("item");
   const list=document.getElementById("p2000List");
   list.innerHTML="";
 
-  const knrm=data.items
-    .filter(item=>item.title.toLowerCase().includes("knrm"))
-    .slice(0,20);
+  items.forEach((item,i)=>{
+    if(i>20) return;
 
-  knrm.forEach(item=>{
+    const title=item.querySelector("title").textContent;
+    if(!title.toLowerCase().includes("knrm")) return;
+
+    const pubDate=item.querySelector("pubDate").textContent;
+    const time=new Date(pubDate).toLocaleString("nl-NL");
+
     const div=document.createElement("div");
     div.className="p2000-item";
-
-    const time=new Date(item.pubDate).toLocaleString("nl-NL");
-
     div.innerHTML=`
       <div class="p2000-time">${time}</div>
-      <div>${item.title}</div>
+      <div>${title}</div>
     `;
     list.appendChild(div);
   });
