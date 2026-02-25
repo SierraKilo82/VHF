@@ -126,14 +126,14 @@ header{
 
 .tile{
   background:var(--panel);
-  padding:16px;
+  padding:14px 14px 12px 14px;
   border-radius:16px;
   transition:.2s;
 
   display:flex;
   flex-direction:column;
-  justify-content:flex-start;
-  height:160px;        /* 👈 vaste hoogte */
+  gap:6px;            /* minder verticale ruimte */
+  height:135px;       /* compacter */
 }
 
 .tile.active{
@@ -456,4 +456,5 @@ setInterval(loadP2000,30000);
 </script>
 </body>
 </html>
+
 
