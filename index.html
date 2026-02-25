@@ -417,49 +417,34 @@ async function loadP2000(){
   const list=document.getElementById("p2000List");
 
   try{
-    const rssUrl="https://feeds.livep2000.nl/rss.xml";
-    const proxy="https://api.allorigins.win/raw?url=" + encodeURIComponent(rssUrl);
+    const rss="https://www.livep2000.nl/rss/knrm.xml";
+    const api="https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(rss);
 
-    const response=await fetch(proxy);
-    const text=await response.text();
-
-    const parser=new DOMParser();
-    const xml=parser.parseFromString(text,"text/xml");
-
-    const items=[...xml.querySelectorAll("item")];
+    const response=await fetch(api);
+    const data=await response.json();
 
     list.innerHTML="";
 
-    const knrmItems=items
-      .filter(item => 
-        item.querySelector("title")?.textContent
-        .toLowerCase()
-        .includes("knrm")
-      )
-      .slice(0,15);
-
-    if(knrmItems.length===0){
+    if(!data.items || data.items.length===0){
       list.innerHTML="Geen recente KNRM meldingen.";
       return;
     }
 
-    knrmItems.forEach(item=>{
-      const title=item.querySelector("title").textContent;
-      const pubDate=item.querySelector("pubDate").textContent;
-
-      const time=new Date(pubDate).toLocaleString("nl-NL");
-
+    data.items.slice(0,15).forEach(item=>{
       const div=document.createElement("div");
       div.className="p2000-item";
+
+      const time=new Date(item.pubDate).toLocaleString("nl-NL");
+
       div.innerHTML=`
         <div class="p2000-time">${time}</div>
-        <div>${title}</div>
+        <div>${item.title}</div>
       `;
 
       list.appendChild(div);
     });
 
-  } catch(e){
+  }catch(e){
     list.innerHTML="P2000 tijdelijk niet beschikbaar.";
   }
 }
@@ -470,6 +455,7 @@ setInterval(loadP2000,30000);
 </script>
 </body>
 </html>
+
 
 
 
