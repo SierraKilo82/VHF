@@ -9,7 +9,6 @@
   --knrm-orange:#ED6D3A;
   --panel:#141c24;
   --panel-soft:#1b2630;
-  --text-soft:#9fb3c8;
 }
 
 body{
@@ -17,35 +16,6 @@ body{
   font-family:Segoe UI, Arial, sans-serif;
   background:#001c2e;
   color:white;
-}
-
-.dashboard{
-  display:grid;
-  grid-template-columns:380px 1fr;
-  min-height:100vh;
-}
-
-/* ===== P2000 ===== */
-
-.p2000{
-  background:#0f1a24;
-  border-right:2px solid var(--knrm-orange);
-  display:flex;
-  flex-direction:column;
-}
-
-.p2000-header{
-  padding:14px;
-  font-weight:600;
-  background:var(--panel);
-  border-bottom:1px solid #222;
-}
-
-.p2000-list{
-  padding:10px;
-  overflow:auto;
-  font-size:13px;
-  flex:1;
 }
 
 /* ===== HEADER ===== */
@@ -191,19 +161,20 @@ header{
 input[type=range]{
   width:100%;
 }
+
+/* ===== NACHTMODUS ===== */
+
+body.night{
+  background:#000814;
+}
+
+body.night .tile{
+  background:#0d1b26;
+}
 </style>
 </head>
 
 <body>
-
-<div class="dashboard">
-
-  <div class="p2000">
-    <div class="p2000-header">P2000 – KNRM</div>
-    <div id="p2000List" class="p2000-list">Laden...</div>
-  </div>
-
-  <div>
 
 <header>
   <div class="header-left">
@@ -219,19 +190,17 @@ input[type=range]{
     </div>
 
     <button id="masterBtn" class="master-btn">▶ Play all</button>
-    <button class="icon-btn" onclick="document.body.classList.toggle('night')">🌙</button>
-    <button class="icon-btn" onclick="toggleFullscreen()">⛶</button>
+    <button id="nightBtn" class="icon-btn">🌙</button>
+    <button id="fsBtn" class="icon-btn">⛶</button>
   </div>
 </header>
 
 <div class="grid" id="grid"></div>
 
-  </div>
-</div>
-
 <script>
 
 /* ===== STREAMS ===== */
+
 const streams=[
  {name:"Scheveningen",url:"https://listen.broadcastify.com/c5r9fnj4qx8k7s0.mp3?nc=65742&xan=xtf9912b41c"},
  {name:"Ter Heijde",url:"https://listen.broadcastify.com/3zf8yrvk1pnwq60.mp3?nc=46783&xan=xtf9912b41c"},
@@ -278,8 +247,13 @@ streams.forEach((stream,index)=>{
   vol.oninput=()=>audio.volume=vol.value;
 
   toggle.onclick=()=>{
-    if(audio.paused){ audio.play(); toggle.classList.add("on"); }
-    else{ audio.pause(); toggle.classList.remove("on"); }
+    if(audio.paused){
+      audio.play();
+      toggle.classList.add("on");
+    } else {
+      audio.pause();
+      toggle.classList.remove("on");
+    }
   };
 
   const source=audioCtx.createMediaElementSource(audio);
@@ -294,17 +268,60 @@ streams.forEach((stream,index)=>{
     analyser.getByteFrequencyData(dataArray);
     let avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
     vuBar.style.width=Math.min(avg*2,100)+"%";
+
     if(avg>8){
       tile.classList.add("active");
       setTimeout(()=>tile.classList.remove("active"),800);
     }
+
     requestAnimationFrame(monitor);
   }
 
-  audio.onplay=()=>{audioCtx.resume(); monitor();};
+  audio.onplay=()=>{
+    audioCtx.resume();
+    monitor();
+  };
 });
 
-/* CLOCK */
+/* ===== MASTER BUTTON ===== */
+
+document.getElementById("masterBtn").onclick = ()=>{
+  const audios=document.querySelectorAll("audio");
+  allPlaying=!allPlaying;
+
+  audios.forEach((audio,i)=>{
+    const toggle=document.getElementById("toggle"+i);
+    if(allPlaying){
+      audio.play();
+      toggle.classList.add("on");
+    } else {
+      audio.pause();
+      toggle.classList.remove("on");
+    }
+  });
+
+  document.getElementById("masterBtn").innerHTML=
+    allPlaying ? "⏹ Stop all" : "▶ Play all";
+};
+
+/* ===== NACHTMODUS ===== */
+
+document.getElementById("nightBtn").onclick=()=>{
+  document.body.classList.toggle("night");
+};
+
+/* ===== FULLSCREEN ===== */
+
+document.getElementById("fsBtn").onclick=()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+};
+
+/* ===== CLOCK ===== */
+
 function updateClock(){
   const now=new Date();
   document.getElementById("localTime").textContent=
@@ -314,7 +331,11 @@ function updateClock(){
   document.getElementById("utcLine").textContent=
     "UTC "+now.toUTCString().split(" ")[4];
 }
+
 setInterval(updateClock,1000);
 updateClock();
 
 </script>
+
+</body>
+</html>
