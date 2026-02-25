@@ -308,10 +308,10 @@ function setupAudio(index){
     requestAnimationFrame(monitor);
   }
 
-  audio.onplay=()=>{
-    audioCtx.resume();
-    monitor();
-  };
+  audio.addEventListener("playing", ()=>{
+  audioCtx.resume();
+  monitor();
+});
 }
 
 function toggleStream(i){
@@ -360,8 +360,14 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-window.addEventListener("click",()=>audioCtx.resume());
+function unlockAudio(){
+  audioCtx.resume();
+}
+
+document.addEventListener("touchstart", unlockAudio, {once:true});
+document.addEventListener("click", unlockAudio, {once:true});
 </script>
 
 </body>
+
 </html>
