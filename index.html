@@ -286,7 +286,25 @@ streams.forEach((stream,index)=>{
   audio.onplay=()=>{
     audioCtx.resume();
     monitor();
-  };
+
+    audio.addEventListener("playing",()=>{
+  status.textContent="Live";
+  status.className="status live";
+});
+
+audio.addEventListener("waiting",()=>{
+  status.textContent="Buffering...";
+  status.className="status buffering";
+});
+
+audio.addEventListener("pause",()=>{
+  status.textContent="Paused";
+  status.className="status paused";
+});
+
+audio.addEventListener("error",()=>{
+  status.textContent="Offline";
+  status.className="status offline";
 });
 
 /* ===== MASTER BUTTON ===== */
@@ -345,6 +363,7 @@ updateClock();
 
 </body>
 </html>
+
 
 
 
